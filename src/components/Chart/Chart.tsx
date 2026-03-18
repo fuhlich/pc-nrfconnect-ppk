@@ -77,6 +77,12 @@ ChartJS.register(
     Title,
 );
 
+// Render charts at CSS pixel resolution (1:1) rather than the device physical pixel ratio.
+// On high-DPI/high-resolution displays the default behaviour (DPR ≥ 2) causes a significant
+// performance hit when the window is large or full-screen, because the canvas is scaled up
+// proportionally, multiplying the number of pixels that must be drawn.
+ChartJS.defaults.devicePixelRatio = 1;
+
 export type CursorData = {
     cursorBegin: number | null | undefined;
     cursorEnd: number | null | undefined;
