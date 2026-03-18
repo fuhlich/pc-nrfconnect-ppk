@@ -77,12 +77,6 @@ ChartJS.register(
     Title,
 );
 
-// Render charts at CSS pixel resolution (1:1) rather than the device physical pixel ratio.
-// On high-DPI/high-resolution displays the default behaviour (DPR ≥ 2) causes a significant
-// performance hit when the window is large or full-screen, because the canvas is scaled up
-// proportionally, multiplying the number of pixels that must be drawn.
-ChartJS.defaults.devicePixelRatio = 1;
-
 export type CursorData = {
     cursorBegin: number | null | undefined;
     cursorEnd: number | null | undefined;
@@ -107,7 +101,18 @@ const executeChartUpdateOperation = async () => {
     }
 
     chartUpdateInprogress = false;
-    executeChartUpdateOperation();
+
+    // When a follow-up request arrived while the current update was running,
+    // defer its execution to the next animation frame rather than starting it
+    // immediately. This throttles the chart render rate to ~60 fps and prevents
+    // the update loop from consuming more CPU/GPU than the display can show.
+    //
+    // If nextUpdateRequests is empty here, no rAF is needed: the next request
+    // will be dispatched directly by the React effect that sets it, so no
+    // updates are ever dropped.
+    if (nextUpdateRequests) {
+        requestAnimationFrame(() => executeChartUpdateOperation());
+    }
 };
 
 const updateChart = async (
